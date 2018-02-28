@@ -4,83 +4,79 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Event;
+use App\User;
 
 class EventsController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
+
+    public function index(Request $request)
     {
-        return Event::all();
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
+
+        return Event::where('start_date', '>=', $startDate)
+                    ->where('end_date', '<=', $endDate)
+                    ->get();
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
+    public function myEvents(User $user, Request $request){
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
+
+        return $user->event()
+        ->where('start_date', '>=', $startDate)
+        ->where('end_date', '<=', $endDate)
+        ->get();
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
+
     public function store(Request $request)
     {
-        $event = Event::create($request->all());
-        return response()->json($event, 201);
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
+
+        $event = new Event();
+        if($events = $event->check($startDate, $endDate)){
+            return response()->json(['status' => 'Cant create event on date: ' . $startDate . ' ' . $endDate], 400);
+        } else {
+            $event = Event::create($request->all());
+            $event->user()->attach($request->get('user_id'));
+            return response()->json($event, 201);
+        }
+
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
+
+    public function show(Event $event)
     {
-        //
+        return response()->json($event);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
+
     public function edit($id)
     {
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
+
+    public function update(Request $request, Event $event)
     {
-        //
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
+
+
+        if($events = $event->check($startDate, $endDate)){
+            return response()->json(['status' => 'Cant edit event on date: ' . $startDate . ' ' . $endDate], 400);
+        } else {
+            $event->update($request->all());
+            return response()->json([]);
+        }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
+
+    public function destroy(Event $event)
     {
-        //
+        $event->delete();
+        return response()->json([]);
     }
 }
