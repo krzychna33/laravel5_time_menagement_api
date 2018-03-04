@@ -41,6 +41,6 @@ class User extends Authenticatable implements Transformable
     ];
 
     public function event(){
-        return $this->belongsToMany(Event::class, 'user_event');
+        return $this->belongsToMany(Event::class);
     }
 }

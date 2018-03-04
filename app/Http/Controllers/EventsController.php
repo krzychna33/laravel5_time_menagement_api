@@ -3,30 +3,33 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Event;
-use App\User;
+use App\Entities\User;
+use App\Entities\Event;
+use App\Repositories\EventRepository;
+use App\Repositories\UserRepository;
 
 class EventsController extends Controller
 {
+
+    protected $eventRepository;
+
+    public function __construct(EventRepository $eventRepository){
+        $this->eventRepository = $eventRepository;
+    }
 
     public function index(Request $request)
     {
         $startDate = $request->get('start_date');
         $endDate = $request->get('end_date');
 
-        return Event::where('start_date', '>=', $startDate)
-                    ->where('end_date', '<=', $endDate)
-                    ->get();
+        return $this->eventRepository->getEvents($startDate, $endDate);
     }
 
-    public function myEvents(User $user, Request $request){
+    public function myEvents(Request $request, $userId, UserRepository $userRepository){
         $startDate = $request->get('start_date');
         $endDate = $request->get('end_date');
 
-        return $user->event()
-        ->where('start_date', '>=', $startDate)
-        ->where('end_date', '<=', $endDate)
-        ->get();
+        return $userRepository->myEvents($startDate, $endDate, $userId);
     }
 
 
@@ -35,12 +38,10 @@ class EventsController extends Controller
         $startDate = $request->get('start_date');
         $endDate = $request->get('end_date');
 
-        $event = new Event();
-        if($events = $event->check($startDate, $endDate)){
+        if($this->eventRepository->check($startDate, $endDate)){
             return response()->json(['status' => 'Cant create event on date: ' . $startDate . ' ' . $endDate], 400);
         } else {
-            $event = Event::create($request->all());
-            $event->user()->attach($request->get('user_id'));
+            $event = $this->eventRepository->createEvent($request->all(), $request->get('user_id'));
             return response()->json($event, 201);
         }
 
@@ -59,17 +60,17 @@ class EventsController extends Controller
     }
 
 
-    public function update(Request $request, Event $event)
+    public function update(Request $request, $id)
     {
         $startDate = $request->get('start_date');
         $endDate = $request->get('end_date');
 
 
-        if($events = $event->check($startDate, $endDate)){
+        if($this->eventRepository->check($startDate, $endDate, $id)){
             return response()->json(['status' => 'Cant edit event on date: ' . $startDate . ' ' . $endDate], 400);
         } else {
-            $event->update($request->all());
-            return response()->json([]);
+            $event = $this->eventRepository->editEvent($request->all(), $id);
+            return response()->json($event, 201);
         }
     }
 

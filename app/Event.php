@@ -5,10 +5,13 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\User;
+use Prettus\Repository\Contracts\Transformable;
+use Prettus\Repository\Traits\TransformableTrait;
 
 class Event extends Model
 {
     use SoftDeletes;
+    use TransformableTrait;
 
     /**
      * The attributes that should be mutated to dates.
