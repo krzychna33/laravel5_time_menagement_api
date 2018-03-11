@@ -9,9 +9,9 @@ class UsersSeeder extends Seeder
      *
      * @return void
      */
-    public function run()
+    public function run(\App\Repositories\UserRepository $repository)
     {
-        \App\User::create([
+        $repository->create([
             'name' => 'admin',
             'first_name' => 'Admin',
             'last_name' => 'Admin',
