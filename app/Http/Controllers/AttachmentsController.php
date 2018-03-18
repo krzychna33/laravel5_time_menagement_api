@@ -154,7 +154,7 @@ class AttachmentsController extends Controller
             }
 
             $response = [
-                'message' => 'Attachment updated.',
+                'message' => 'Attachment updated.!',
                 'data'    => $attachment->toArray(),
             ];
 
