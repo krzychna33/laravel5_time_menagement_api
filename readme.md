@@ -28,5 +28,7 @@ v0.5)
 - EventsRequests
 - RolesRequests
 
+v0.6)
+- Attachments, Notes, Tags: Controllers, Requests, Validation
 
 
