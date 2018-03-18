@@ -182,7 +182,7 @@ class AttachmentsController extends Controller
         $deleted = $this->repository->delete($id);
 
         return response()->json([
-            'message' => 'Attachment deleted.',
+            'message' => 'Attachment deleted.!',
             'deleted' => $deleted,
         ]);
     }
