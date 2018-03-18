@@ -8,7 +8,10 @@ function() {
 
     Route::resources([
         'events' => 'EventsController',
-        'roles' => 'RolesController'
+        'roles' => 'RolesController',
+        'attachments' => 'AttachmentsController',
+        'notes' => 'NotesController',
+        'tags' => 'TagsController'
     ]);
         
     Route::get('events/my-events/{user}', 'EventsController@myEvents');

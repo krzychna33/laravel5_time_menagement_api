@@ -7,35 +7,36 @@ use Illuminate\Http\Request;
 use App\Http\Requests;
 use Prettus\Validator\Contracts\ValidatorInterface;
 use Prettus\Validator\Exceptions\ValidatorException;
-use App\Http\Requests\RoleCreateRequest;
-use App\Http\Requests\RoleUpdateRequest;
-use App\Repositories\RoleRepository;
-use App\Validators\RoleValidator;
+use App\Http\Requests\AttachmentCreateRequest;
+use App\Http\Requests\AttachmentUpdateRequest;
+use App\Repositories\AttachmentRepository;
+use App\Validators\AttachmentValidator;
+use Illuminate\Support\Facades\Storage;
 
 /**
- * Class RolesController.
+ * Class AttachmentsController.
  *
  * @package namespace App\Http\Controllers;
  */
-class RolesController extends Controller
+class AttachmentsController extends Controller
 {
     /**
-     * @var RoleRepository
+     * @var AttachmentRepository
      */
     protected $repository;
 
     /**
-     * @var RoleValidator
+     * @var AttachmentValidator
      */
     protected $validator;
 
     /**
-     * RolesController constructor.
+     * AttachmentsController constructor.
      *
-     * @param RoleRepository $repository
-     * @param RoleValidator $validator
+     * @param AttachmentRepository $repository
+     * @param AttachmentValidator $validator
      */
-    public function __construct(RoleRepository $repository, RoleValidator $validator)
+    public function __construct(AttachmentRepository $repository, AttachmentValidator $validator)
     {
         $this->repository = $repository;
         $this->validator  = $validator;
@@ -49,40 +50,47 @@ class RolesController extends Controller
     public function index()
     {
         $this->repository->pushCriteria(app('Prettus\Repository\Criteria\RequestCriteria'));
-        $roles = $this->repository->all();
+        $attachments = $this->repository->all();
 
-            return response()->json([
-                'data' => $roles,
-            ]);
+        return response()->json([
+            'data' => $attachments,
+        ]);
+
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  RoleCreateRequest $request
+     * @param  AttachmentCreateRequest $request
      *
      * @return \Illuminate\Http\Response
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
      */
-    public function store(RoleCreateRequest $request)
+    public function store(AttachmentCreateRequest $request)
     {
         try {
 
             $this->validator->with($request->all())->passesOrFail(ValidatorInterface::RULE_CREATE);
 
-            $role = $this->repository->create($request->all());
+            $attachment = $this->repository->create([
+                'name' => $request->get('name', null),
+                'source' => Storage::disk('public')->put('', $request->file('source'))
+            ]);
+
+            $eventId = $request->get('event', false);
+            if($eventId){
+                $attachment->events()->attach($eventId);
+            }
 
             $response = [
-                'message' => 'Role created.',
-                'data'    => $role->toArray(),
+                'message' => 'Attachment created.',
+                'data'    => $attachment->toArray(),
             ];
-
 
             return response()->json($response);
 
         } catch (ValidatorException $e) {
-
             return response()->json([
                 'error'   => true,
                 'message' => $e->getMessageBag()
@@ -99,10 +107,10 @@ class RolesController extends Controller
      */
     public function show($id)
     {
-        $role = $this->repository->find($id);
+        $attachment = $this->repository->find($id);
 
-        return response()->json([
-            'data' => $role,
+         return response()->json([
+            'data' => $attachment,
         ]);
 
     }
@@ -116,41 +124,48 @@ class RolesController extends Controller
      */
     public function edit($id)
     {
-        $role = $this->repository->find($id);
+        //
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  RoleUpdateRequest $request
+     * @param  AttachmentUpdateRequest $request
      * @param  string            $id
      *
      * @return Response
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
      */
-    public function update(RoleUpdateRequest $request, $id)
+    public function update(AttachmentUpdateRequest $request, $id)
     {
         try {
 
             $this->validator->with($request->all())->passesOrFail(ValidatorInterface::RULE_UPDATE);
 
-            $role = $this->repository->update($request->all(), $id);
+            $attachment = $this->repository->update([
+                'name' => $request->get('name', null),
+                'source' => Storage::disk('public')->put('', $request->file('source'))
+            ], $id);
+
+
+            if($eventId){
+                $attachment->events()->sync($eventId);
+            }
 
             $response = [
-                'message' => 'Role updated.',
-                'data'    => $role->toArray(),
+                'message' => 'Attachment updated.',
+                'data'    => $attachment->toArray(),
             ];
-
 
             return response()->json($response);
 
         } catch (ValidatorException $e) {
 
-                return response()->json([
-                    'error'   => true,
-                    'message' => $e->getMessageBag()
-                ]);
+            return response()->json([
+                'error'   => true,
+                'message' => $e->getMessageBag()
+            ]);
         }
     }
 
@@ -166,10 +181,9 @@ class RolesController extends Controller
     {
         $deleted = $this->repository->delete($id);
 
-
-            return response()->json([
-                'message' => 'Role deleted.',
-                'deleted' => $deleted,
-            ]);
+        return response()->json([
+            'message' => 'Attachment deleted.',
+            'deleted' => $deleted,
+        ]);
     }
 }

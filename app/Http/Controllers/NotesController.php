@@ -7,35 +7,35 @@ use Illuminate\Http\Request;
 use App\Http\Requests;
 use Prettus\Validator\Contracts\ValidatorInterface;
 use Prettus\Validator\Exceptions\ValidatorException;
-use App\Http\Requests\RoleCreateRequest;
-use App\Http\Requests\RoleUpdateRequest;
-use App\Repositories\RoleRepository;
-use App\Validators\RoleValidator;
+use App\Http\Requests\NoteCreateRequest;
+use App\Http\Requests\NoteUpdateRequest;
+use App\Repositories\NoteRepository;
+use App\Validators\NoteValidator;
 
 /**
- * Class RolesController.
+ * Class NotesController.
  *
  * @package namespace App\Http\Controllers;
  */
-class RolesController extends Controller
+class NotesController extends Controller
 {
     /**
-     * @var RoleRepository
+     * @var NoteRepository
      */
     protected $repository;
 
     /**
-     * @var RoleValidator
+     * @var NoteValidator
      */
     protected $validator;
 
     /**
-     * RolesController constructor.
+     * NotesController constructor.
      *
-     * @param RoleRepository $repository
-     * @param RoleValidator $validator
+     * @param NoteRepository $repository
+     * @param NoteValidator $validator
      */
-    public function __construct(RoleRepository $repository, RoleValidator $validator)
+    public function __construct(NoteRepository $repository, NoteValidator $validator)
     {
         $this->repository = $repository;
         $this->validator  = $validator;
@@ -49,44 +49,45 @@ class RolesController extends Controller
     public function index()
     {
         $this->repository->pushCriteria(app('Prettus\Repository\Criteria\RequestCriteria'));
-        $roles = $this->repository->all();
+        $notes = $this->repository->all();
 
-            return response()->json([
-                'data' => $roles,
-            ]);
+
+        return response()->json([
+            'data' => $notes,
+        ]);
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  RoleCreateRequest $request
+     * @param  NoteCreateRequest $request
      *
      * @return \Illuminate\Http\Response
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
      */
-    public function store(RoleCreateRequest $request)
+    public function store(NoteCreateRequest $request)
     {
         try {
 
             $this->validator->with($request->all())->passesOrFail(ValidatorInterface::RULE_CREATE);
 
-            $role = $this->repository->create($request->all());
+            $note = $this->repository->create($request->all());
 
             $response = [
-                'message' => 'Role created.',
-                'data'    => $role->toArray(),
+                'message' => 'Note created.',
+                'data'    => $note->toArray(),
             ];
-
-
+                
             return response()->json($response);
 
         } catch (ValidatorException $e) {
-
+            
             return response()->json([
                 'error'   => true,
                 'message' => $e->getMessageBag()
             ]);
+
         }
     }
 
@@ -99,10 +100,11 @@ class RolesController extends Controller
      */
     public function show($id)
     {
-        $role = $this->repository->find($id);
+        $note = $this->repository->find($id);
+
 
         return response()->json([
-            'data' => $role,
+            'data' => $note,
         ]);
 
     }
@@ -116,30 +118,31 @@ class RolesController extends Controller
      */
     public function edit($id)
     {
-        $role = $this->repository->find($id);
+        $note = $this->repository->find($id);
+
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  RoleUpdateRequest $request
+     * @param  NoteUpdateRequest $request
      * @param  string            $id
      *
      * @return Response
      *
      * @throws \Prettus\Validator\Exceptions\ValidatorException
      */
-    public function update(RoleUpdateRequest $request, $id)
+    public function update(NoteUpdateRequest $request, $id)
     {
         try {
 
             $this->validator->with($request->all())->passesOrFail(ValidatorInterface::RULE_UPDATE);
 
-            $role = $this->repository->update($request->all(), $id);
+            $note = $this->repository->update($request->all(), $id);
 
             $response = [
-                'message' => 'Role updated.',
-                'data'    => $role->toArray(),
+                'message' => 'Note updated.',
+                'data'    => $note->toArray(),
             ];
 
 
@@ -147,10 +150,12 @@ class RolesController extends Controller
 
         } catch (ValidatorException $e) {
 
-                return response()->json([
-                    'error'   => true,
-                    'message' => $e->getMessageBag()
-                ]);
+
+            return response()->json([
+                'error'   => true,
+                'message' => $e->getMessageBag()
+            ]);
+
         }
     }
 
@@ -167,9 +172,10 @@ class RolesController extends Controller
         $deleted = $this->repository->delete($id);
 
 
-            return response()->json([
-                'message' => 'Role deleted.',
-                'deleted' => $deleted,
-            ]);
+        return response()->json([
+            'message' => 'Note deleted.',
+            'deleted' => $deleted,
+        ]);
+
     }
 }
